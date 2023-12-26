@@ -43,9 +43,9 @@ async function main() {
     { shortName: 'ST', value: 'Rio Grande do Sul' },
     { shortName: 'L', value: 'Sapiranga' },
     { shortName: 'O', value: 'Colyseus WebTransport' },
-    { shortName: 'CN', value: '0.0.0.0' }
+    { shortName: 'CN', value: 'localhost' }
   ], {
-    days: 12,
+    days: 14,
   });
 
   /**
@@ -57,9 +57,17 @@ async function main() {
   }, async function (req, res) {
     try {
       const filename = req.url?.substring(1) || "index.html"; // fallback to "index.html"
-      const contents = await readFile(path.join(__dirname, "..", "public", filename));
-      res.writeHead(200, { "content-type": mime.getType(filename) || "text/plain" });
-      res.end(contents);
+      const contents = (await readFile(path.join(__dirname, "..", "public", filename)));
+      const contentType = mime.getType(filename) || "text/plain" ;
+      res.writeHead(200, { "content-type": contentType });
+
+      if (contentType.indexOf("text/") === 0) {
+        const pubKeyBytes = (new Uint8Array(certificate?.raw.publicKey!));
+        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", pubKeyBytes.toString()));
+
+      } else {
+        res.end(contents);
+      }
 
     } catch (e) {
       console.error(e);
@@ -71,7 +79,7 @@ async function main() {
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
 
   const h3Server = new Http3Server({
-    host: "0.0.0.0",
+    host: "localhost",
     port: PORT,
     secret: "mysecret",
     cert: certificate?.cert,

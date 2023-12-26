@@ -38,7 +38,12 @@
 			connect();
 
 			async function connect() {
-				const wt = new WebTransport("https://localhost:4433");
+				const wt = new WebTransport("https://localhost:4433", {
+					serverCertificateHashes: [{
+						algorithm: 'sha-256',
+						value: Uint8Array.from('{{SERVER_PUB_KEY}}'.split(',')).buffer
+					}]
+				});
 
 				wt.ready.then(() => {
 					createLog("Connection ready");
