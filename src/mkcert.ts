@@ -122,7 +122,7 @@ const jan_1_2050 = new Date('2050-01-01T00:00:00Z') // eslint-disable-line camel
  *
  * @return the ASN.1 object representing the date.
  */
-function _dateToAsn1(date) {
+function _dateToAsn1(date: Date) {
   // eslint-disable-next-line camelcase
   if (date >= jan_1_1950 && date < jan_1_2050) {
     return asn1.create(
@@ -149,7 +149,7 @@ function _dateToAsn1(date) {
  * @param {any} params The signature parameters object
  * @return ASN.1 object representing signature parameters
  */
-function _signatureParametersToAsn1(oid, params) {
+function _signatureParametersToAsn1(oid: string, params: any) {
   const parts = []
 
   switch (oid) {
@@ -347,7 +347,7 @@ function toPositiveHex(hexString: string) {
  * @param {*} options
  * @returns {Promise<Certificate | null>}
  */
-export async function generateWebTransportCertificate(attrs: any, options: any) {
+export async function generateWebTransportCertificate(attrs: any, options: { days?: number, extensions?: any[] }) {
   try {
     const keyPair = await crypto.subtle.generateKey(
       {

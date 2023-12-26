@@ -34,15 +34,16 @@
 		</section>
 
 		<script type="text/javascript">
-
 			connect();
 
 			async function connect() {
-				const wt = new WebTransport("https://localhost:4433", {
-					serverCertificateHashes: [{
-						algorithm: 'sha-256',
-						value: Uint8Array.from('{{SERVER_PUB_KEY}}'.split(',')).buffer
-					}]
+				const wt = new WebTransport("https://localhost:4433/", {
+					// // requireUnreliable: true,
+					// // congestionControl: "default", // "low-latency" || "throughput"
+					// serverCertificateHashes: [{
+					// 	algorithm: 'sha-256',
+					// 	value: Uint8Array.from('{{SERVER_PUB_KEY}}'.split(',')).buffer
+					// }]
 				});
 
 				wt.ready.then(() => {
@@ -56,6 +57,7 @@
 				}).catch((e) => {
 					createLog("Connection closed with error" + e.message, true);
 				});
+
 
 				// wait connection to be ready.
 				console.log("Waiting for connection...");
@@ -82,14 +84,18 @@
 				}
 				logEl.appendChild(document.createTextNode(message));
 				logsEl.appendChild(logEl);
+
+				// force scroll to bottom
+				logsEl.scrollTop = logsEl.scrollHeight;
 			}
 
 		</script>
 
 		<footer>
+			<h3>External references:</h3>
 			<ul>
-				<li>Read more about WebTransport at <a href="https://web.dev/webtransport/">web.dev</a></li>
-				<li><a href="https://www.w3.org/TR/webtransport/">WebTransport W3C Working Draft</a></li>
+				<li><a href="https://web.dev/webtransport/">Using WebTransport <small>(web.dev)</small></a></li>
+				<li><a href="https://www.w3.org/TR/webtransport/">W3C Working Draft <small>(w3c.org)</small></a></li>
 			</ul>
 		</footer>
 

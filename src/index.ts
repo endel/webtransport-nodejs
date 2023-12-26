@@ -43,9 +43,9 @@ async function main() {
     { shortName: 'ST', value: 'Rio Grande do Sul' },
     { shortName: 'L', value: 'Sapiranga' },
     { shortName: 'O', value: 'Colyseus WebTransport' },
-    { shortName: 'CN', value: 'localhost' }
+    { shortName: 'CN', value: 'localhost' },
   ], {
-    days: 14,
+    days: 13,
   });
 
   /**
@@ -64,6 +64,9 @@ async function main() {
       if (contentType.indexOf("text/") === 0) {
         const pubKeyBytes = (new Uint8Array(certificate?.raw.publicKey!));
         res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", pubKeyBytes.toString()));
+
+        // const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
+        // res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", fingerprint!.join(",")));
 
       } else {
         res.end(contents);
