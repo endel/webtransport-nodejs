@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="style.css">
+
+	<title>WebTransport Playground</title>
+</head>
+<body>
+
+	<main>
+
+		<header>
+			<img src="/webtransport-dummy-logo.png" alt="WebTransport" width="100" />
+			<h1>WebTransport Playground</h1>
+		</header>
+
+		<section>
+			<div>
+				TODO: add controls to connect to a server and send datagrams.
+
+			</div>
+
+			<aside>
+				<h2>Logs</h2>
+				<code id="logs"></code>
+			</aside>
+		</section>
+
+		<script type="text/javascript">
+			const logsEl = document.querySelector("#logs");
+			async function connect() {
+				const wt = new WebTransport("https://localhost:4433");
+
+				wt.closed.then(() => {
+					logsEl.appendChild(document.createTextNode("Connection closed"));
+				}).catch((e) => {
+					console.log();
+					logsEl.appendChild(document.createTextNode("Connection closed with error" + e.message));
+				});
+
+				// wait connection to be ready.
+				console.log("Waiting for connection...");
+				await wt.ready;
+				console.log("Connection ready!");
+
+				// Datagram API
+
+				// Unidirectional Stream
+
+				// Bidirectional Stream
+
+			}
+
+			function sendDatagram(wt) {
+			}
+
+			connect();
+
+		</script>
+
+		<footer>
+			<ul>
+				<li>Read more about WebTransport at <a href="https://web.dev/webtransport/">web.dev</a></li>
+				<li><a href="https://www.w3.org/TR/webtransport/">WebTransport W3C Working Draft</a></li>
+			</ul>
+		</footer>
+
+	</main>
+
+</body>
+</html>

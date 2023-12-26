@@ -1,0 +1,56 @@
+* { margin: 0; padding: 0; }
+
+html, body {
+	font-family: 'Inter', sans-serif;
+}
+
+header {
+	display: flex;
+	padding: 1em 0 2em 0;
+	border-bottom: 1px solid #ccc;
+}
+
+header h1 {
+	margin: auto 0.5em;
+}
+
+ul {
+	margin-left: 2em;
+}
+
+main {
+	margin: 0 auto;
+	width: 1024px;
+	padding: 1em;
+}
+
+main section {
+	display: flex;
+}
+
+main section div,
+main section aside {
+	padding: 1em;
+	width: 50%;
+}
+
+section h1,
+section h2,
+section h3,
+section h4 {
+	margin: 0.5em 0;
+}
+
+code {
+	background-color: #eee;
+	padding: 0.1em 0.3em;
+	border-radius: 3px;
+	display: block;
+	padding: 1em;
+}
+
+footer {
+	margin-top: 1em;
+	padding-top: 1em;
+	border-top: 1px solid #ccc;
+}
