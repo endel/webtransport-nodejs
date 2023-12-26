@@ -43,59 +43,52 @@ async function main() {
     { shortName: 'ST', value: 'Rio Grande do Sul' },
     { shortName: 'L', value: 'Sapiranga' },
     { shortName: 'O', value: 'Colyseus WebTransport' },
-    { shortName: 'CN', value: 'localhost' }
+    { shortName: 'CN', value: '0.0.0.0' }
   ], {
     days: 12,
   });
 
-  console.log("will createServer()...");
+  /**
+   * Create a HTTPS server to serve static files
+   */
   createServer({
     cert: certificate?.cert,
     key: certificate?.private
   }, async function (req, res) {
-    console.log("Received request:", req.url);
-
-    /**
-     * Serve static files from `public/` folder
-     */
-
     try {
       const filename = req.url?.substring(1) || "index.html"; // fallback to "index.html"
       const contents = await readFile(path.join(__dirname, "..", "public", filename));
-      res.writeHead(200, {
-        "content-type": mime.getType(filename) || "text/plain"
-      });
+      res.writeHead(200, { "content-type": mime.getType(filename) || "text/plain" });
       res.end(contents);
 
     } catch (e) {
+      console.error(e);
       res.writeHead(404, { "content-type": "text/plain" });
       res.end("Not Found");
     }
-
   }).listen(PORT);
 
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
 
-//   const h3Server = new Http3Server({
-//     host: "localhost",
-//     port: PORT,
-//     secret: "mysecret",
-//     cert: certificate?.cert,
-//     privKey: certificate?.private,
-//   });
+  const h3Server = new Http3Server({
+    host: "0.0.0.0",
+    port: PORT,
+    secret: "mysecret",
+    cert: certificate?.cert,
+    privKey: certificate?.private,
+  });
 
-//   loop(h3Server);
+  h3Server.startServer();
+  loop(h3Server);
 
-//   h3Server.startServer();
+  function handle(e: any) {
+    console.log("SIGNAL RECEIVED:", e);
+    isKilled = true;
+    h3Server.stopServer();
+  }
 
-//   function handle(e: any) {
-//     console.log("SIGNAL RECEIVED:", e);
-//     isKilled = true;
-//     h3Server.stopServer();
-//   }
-
-//   process.on("SIGINT", handle);
-//   process.on("SIGTERM", handle);
+  process.on("SIGINT", handle);
+  process.on("SIGTERM", handle);
 
 }
 

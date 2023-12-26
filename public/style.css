@@ -28,7 +28,7 @@ main section {
 	display: flex;
 }
 
-main section div,
+main section > div,
 main section aside {
 	padding: 1em;
 	width: 50%;
@@ -47,6 +47,14 @@ code {
 	border-radius: 3px;
 	display: block;
 	padding: 1em;
+}
+
+#logs > div:not(:last-child) {
+	margin-bottom: 0.5em;
+}
+
+#logs > div.error {
+	background-color: #fdd;
 }
 
 footer {

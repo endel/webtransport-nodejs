@@ -34,20 +34,28 @@
 		</section>
 
 		<script type="text/javascript">
-			const logsEl = document.querySelector("#logs");
+
+			connect();
+
 			async function connect() {
 				const wt = new WebTransport("https://localhost:4433");
 
-				wt.closed.then(() => {
-					logsEl.appendChild(document.createTextNode("Connection closed"));
+				wt.ready.then(() => {
+					createLog("Connection ready");
 				}).catch((e) => {
-					console.log();
-					logsEl.appendChild(document.createTextNode("Connection closed with error" + e.message));
+					createLog("Connection failed with error" + e.message, true);
+				});
+
+				wt.closed.then(() => {
+					createLog("Connection closed");
+				}).catch((e) => {
+					createLog("Connection closed with error" + e.message, true);
 				});
 
 				// wait connection to be ready.
 				console.log("Waiting for connection...");
 				await wt.ready;
+
 				console.log("Connection ready!");
 
 				// Datagram API
@@ -61,7 +69,15 @@
 			function sendDatagram(wt) {
 			}
 
-			connect();
+			const logsEl = document.querySelector("#logs");
+			function createLog(message, isError = false) {
+				const logEl = document.createElement("div");
+				if (isError) {
+					logEl.classList.add("error");
+				}
+				logEl.appendChild(document.createTextNode(message));
+				logsEl.appendChild(logEl);
+			}
 
 		</script>
 
