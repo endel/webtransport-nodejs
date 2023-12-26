@@ -7,36 +7,6 @@ import { generateWebTransportCertificate } from './mkcert';
 
 const PORT = 4433;
 
-let isKilled: boolean = false;
-
-async function loop(h3Server: Http3Server) {
-  try {
-    const sessionStream = await h3Server.sessionStream("/");
-    const sessionReader = sessionStream.getReader();
-
-    while (!isKilled) {
-      console.log("sessionReader.read()");
-      const { done, value } = await sessionReader.read();
-      if (done) {
-        console.log("done! break loop.");
-        break;
-      }
-
-      console.log(value);
-
-      console.log("sessionReader.read() =>", value);
-    }
-
-  } catch (e) {
-    console.error("error:", e);
-
-  } finally {
-    console.log("will stop the server!");
-    // stop the server!
-    h3Server.stopServer();
-  }
-}
-
 async function main() {
   const certificate = await generateWebTransportCertificate([
     { shortName: 'C', value: 'BR' },
@@ -90,7 +60,8 @@ async function main() {
   });
 
   h3Server.startServer();
-  loop(h3Server);
+
+  let isKilled: boolean = false;
 
   function handle(e: any) {
     console.log("SIGNAL RECEIVED:", e);
@@ -101,7 +72,43 @@ async function main() {
   process.on("SIGINT", handle);
   process.on("SIGTERM", handle);
 
-}
+  try {
+    const sessionStream = await h3Server.sessionStream("/");
+    const sessionReader = sessionStream.getReader();
 
+    while (!isKilled) {
+      console.log("sessionReader.read() - waiting for session...");
+      const { done, value } = await sessionReader.read();
+      if (done) {
+        console.log("done! break loop.");
+        break;
+      }
+
+      // reading datagrams
+      const datagramReader = value.datagrams.readable.getReader();
+
+      // writing datagrams
+      const datagramWriter = value.datagrams.writable.getWriter();
+      datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
+      datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
+
+      value.ready.then(() => {
+        console.log("session ready!");
+      }).catch((e) => {
+        console.log("session failed to be ready!");
+      });
+      // console.log(value);
+      // console.log("sessionReader.read() =>", value);
+    }
+
+  } catch (e) {
+    console.error("error:", e);
+
+  } finally {
+    console.log("will stop the server!");
+    // stop the server!
+    h3Server.stopServer();
+  }
+}
 
 main();

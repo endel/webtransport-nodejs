@@ -63,9 +63,25 @@
 				console.log("Waiting for connection...");
 				await wt.ready;
 
+
 				console.log("Connection ready!");
 
 				// Datagram API
+
+				const datagramReader = wt.datagrams.readable.getReader();
+
+				let isReaderClosed = false;
+				datagramReader.closed.then(() => isReaderClosed = true);
+
+				async function readDatagrams(reader) {
+					console.log("Reading datagrams... closed?", reader.closed);
+					while (!isReaderClosed) {
+						const result = await reader.read();
+						createLog("Received datagram: " + result.value);
+					}
+				}
+
+				readDatagrams(datagramReader);
 
 				// Unidirectional Stream
 
