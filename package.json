@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "chrome": "open -a Google\\ Chrome --args '--ignore-certificate-errors' '--v=2' '--enable-logging=stderr' '--origin-to-force-quic-on=0.0.0.0:8080'"
+    "chrome": "open -a Google\\ Chrome --args '--ignore-certificate-errors' '--v=2' '--enable-logging=stderr' '--origin-to-force-quic-on=localhost:4433'"
   },
   "author": "",
   "license": "ISC",

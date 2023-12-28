@@ -37,14 +37,23 @@
 			connect();
 
 			async function connect() {
-				const wt = new WebTransport("https://localhost:4433/", {
-					// // requireUnreliable: true,
-					// // congestionControl: "default", // "low-latency" || "throughput"
-					// serverCertificateHashes: [{
-					// 	algorithm: 'sha-256',
-					// 	value: Uint8Array.from('{{SERVER_PUB_KEY}}'.split(',')).buffer
-					// }]
-				});
+				const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+				const pubKey = Uint8Array.from('{{SERVER_PUB_KEY}}'.split(','));
+				const options = (isFirefox) ? undefined : {
+					// requireUnreliable: true,
+					// congestionControl: "default", // "low-latency" || "throughput"
+
+					// Firefox doesn't support "serverCertificateHashes" option yet
+					serverCertificateHashes: [{
+						algorithm: 'sha-256',
+						value: pubKey.buffer
+					}]
+				};
+
+				console.log(options);
+
+				const wt = new WebTransport("https://localhost:4433/", options);
 
 				wt.ready.then(() => {
 					createLog("Connection ready");
@@ -66,22 +75,44 @@
 
 				console.log("Connection ready!");
 
+				//
 				// Datagram API
-
+				//
 				const datagramReader = wt.datagrams.readable.getReader();
+				const datagramWriter = wt.datagrams.writable.getWriter();
 
 				let isReaderClosed = false;
 				datagramReader.closed.then(() => isReaderClosed = true);
 
 				async function readDatagrams(reader) {
-					console.log("Reading datagrams... closed?", reader.closed);
+					console.log("Reading datagrams... closed?", isReaderClosed);
 					while (!isReaderClosed) {
 						const result = await reader.read();
 						createLog("Received datagram: " + result.value);
 					}
 				}
-
 				readDatagrams(datagramReader);
+
+				//
+				// Bidirectional streams
+				//
+				receiveBidirectional();
+
+				async function receiveBidirectional() {
+					const bds = wt.incomingBidirectionalStreams;
+					const reader = bds.getReader();
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) {
+							break;
+						}
+						// value is an instance of WebTransportBidirectionalStream
+						console.log("Received bidirectional stream", {
+							readable: value.readable,
+							writable: value.writable
+						})
+					}
+				}
 
 				// Unidirectional Stream
 
@@ -95,12 +126,9 @@
 			const logsEl = document.querySelector("#logs");
 			function createLog(message, isError = false) {
 				const logEl = document.createElement("div");
-				if (isError) {
-					logEl.classList.add("error");
-				}
+				if (isError) { logEl.classList.add("error"); }
 				logEl.appendChild(document.createTextNode(message));
 				logsEl.appendChild(logEl);
-
 				// force scroll to bottom
 				logsEl.scrollTop = logsEl.scrollHeight;
 			}

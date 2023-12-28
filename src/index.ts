@@ -15,7 +15,7 @@ async function main() {
     { shortName: 'O', value: 'Colyseus WebTransport' },
     { shortName: 'CN', value: 'localhost' },
   ], {
-    days: 13,
+    days: 10,
   });
 
   /**
@@ -33,7 +33,7 @@ async function main() {
 
       if (contentType.indexOf("text/") === 0) {
         const pubKeyBytes = (new Uint8Array(certificate?.raw.publicKey!));
-        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", pubKeyBytes.toString()));
+        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", Array.from(pubKeyBytes).join(",")));
 
         // const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
         // res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", fingerprint!.join(",")));
@@ -84,16 +84,22 @@ async function main() {
         break;
       }
 
-      // reading datagrams
-      const datagramReader = value.datagrams.readable.getReader();
-
-      // writing datagrams
-      const datagramWriter = value.datagrams.writable.getWriter();
-      datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
-      datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
-
       value.ready.then(() => {
         console.log("session ready!");
+
+        value.createBidirectionalStream().then((bidi) => {
+          const writer = bidi.writable.getWriter();
+          const reader = bidi.readable.getReader();
+        });
+
+        // reading datagrams
+        const datagramReader = value.datagrams.readable.getReader();
+
+        // writing datagrams
+        const datagramWriter = value.datagrams.writable.getWriter();
+        datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
+        datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
+
       }).catch((e) => {
         console.log("session failed to be ready!");
       });
