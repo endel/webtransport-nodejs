@@ -40,6 +40,7 @@
 				const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 				const pubKey = Uint8Array.from('{{SERVER_PUB_KEY}}'.split(','));
+
 				const options = (isFirefox) ? undefined : {
 					// requireUnreliable: true,
 					// congestionControl: "default", // "low-latency" || "throughput"

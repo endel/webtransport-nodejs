@@ -7,6 +7,11 @@ import { generateWebTransportCertificate } from './mkcert';
 
 const PORT = 4433;
 
+//
+// TRY THIS??
+// https://stackoverflow.com/questions/75979276/do-i-have-to-get-a-valid-ssl-certificate-to-make-webtranport-server-examples-wor
+//
+
 async function main() {
   const certificate = await generateWebTransportCertificate([
     { shortName: 'C', value: 'BR' },
@@ -32,11 +37,8 @@ async function main() {
       res.writeHead(200, { "content-type": contentType });
 
       if (contentType.indexOf("text/") === 0) {
-        const pubKeyBytes = (new Uint8Array(certificate?.raw.publicKey!));
-        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", Array.from(pubKeyBytes).join(",")));
-
-        // const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
-        // res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", fingerprint!.join(",")));
+        const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
+        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", fingerprint!.join(",")));
 
       } else {
         res.end(contents);
