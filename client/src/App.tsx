@@ -57,14 +57,20 @@ function App() {
 
   async function readData(dataReader: ReadableStreamDefaultReader<Uint8Array>, from: string) {
     let isOpen = true;
-    dataReader.closed.then(() => isOpen = false);
+
+    dataReader.closed
+      .then(() => isOpen = false)
+      .catch((e) => console.log("Failed to close", e.toString()));
 
     while (isOpen) {
-      const { done, value } = await dataReader.read();
-      if (done) {
+      try {
+        const { done, value } = await dataReader.read();
+        if (done) { break; }
+        appendLog({ message: `Read from ${from}: ${value}`, type: 'info' });
+      } catch (e: any) {
+        console.log("Failed to read...", e.toString());
         break;
       }
-      appendLog({ message: `Read from ${from}: ${value}`, type: 'info' });
     }
   }
 
@@ -138,9 +144,9 @@ function App() {
       setIsReady(true);
       appendLog({ message: 'WebTransport is ready', type: 'success' });
 
-      // const datagramReader = wt.datagrams.readable.getReader();
-      // datagramReader.closed.catch(e => console.log("datagram readable closed", e.toString()));
-      // readData(datagramReader, "datagram");
+      const datagramReader = wt.datagrams.readable.getReader();
+      datagramReader.closed.catch(e => console.log("datagram readable closed", e.toString()));
+      readData(datagramReader, "datagram");
 
       // readStream(wt.incomingBidirectionalStreams, "bidirectional");
       // readStream(wt.incomingUnidirectionalStreams, "unidirectional");
