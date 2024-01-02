@@ -7,7 +7,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				<a href="/">
 					<img src={logo} width="120" alt="WebTransport Logo" />
 				</a>
-				<h1 className="font-semibold text-3xl my-auto ml-4">WebTransport Playground</h1>
+				<div className="my-auto ml-4">
+					<h1 className="font-semibold text-3xl ">WebTransport in Node.js</h1>
+					<p>Playground for experimenting with WebTransport in JavaScript | <a href="https://github.com/endel/webtransport-playground" className="underline text-gray-800 hover:text-gray-500">Fork it on GitHub</a>.</p>
+				</div>
 			</header>
 
 			<main>

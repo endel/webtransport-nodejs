@@ -99,6 +99,12 @@ async function main() {
         break;
       }
 
+      value.closed.then(() => {
+        console.log("Session closed successfully!");
+      }).catch((e: any) => {
+        console.log("Session closed with error! " + e);
+      });
+
       value.ready.then(() => {
         console.log("session ready!");
 
