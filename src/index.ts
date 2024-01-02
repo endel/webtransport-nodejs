@@ -105,6 +105,14 @@ async function main() {
         value.createBidirectionalStream().then((bidi) => {
           const writer = bidi.writable.getWriter();
           const reader = bidi.readable.getReader();
+
+          let i = 0;
+          const sendingInterval = setInterval(() => {
+            writer.write(new Uint8Array([i, i + 1, i + 2]));
+            i += 3;
+          }, 1000);
+
+          writer.closed.then(() => clearInterval(sendingInterval));
         });
 
         // reading datagrams

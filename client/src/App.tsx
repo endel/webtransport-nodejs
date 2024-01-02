@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { log } from 'console';
+import { useEffect, useRef, useState } from 'react'
 
 const ENDPOINT = "https://localhost:4433";
 const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
@@ -17,9 +18,9 @@ const LOG_COLOR = {
 
 function App() {
   const [isReady, setIsReady] = useState(false);
-  const [isDatagramReaderClosed, setIsDatagramReaderClosed] = useState(false);
-
   const [logs, setLogs] = useState([] as Log[]);
+
+  const logsRef = useRef(null as HTMLDivElement | null);
 
   const onEndpointChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -29,13 +30,26 @@ function App() {
     setLogs((logs) => [...logs, log]);
   }
 
-  async function readDatagram(datagramReader: ReadableStreamDefaultReader<Uint8Array>) {
-    while (isDatagramReaderClosed === false) {
-      const { done, value } = await datagramReader.read();
+  // async function readDatagram(datagramReader: ReadableStreamDefaultReader<Uint8Array>) {
+  //   while (isDatagramReaderClosed === false) {
+  //     const { done, value } = await datagramReader.read();
+  //     if (done) {
+  //       break;
+  //     }
+  //     appendLog({ message: `Datagram read: ${value}`, type: 'info' });
+  //   }
+  // }
+
+  async function readData(dataReader: ReadableStreamDefaultReader<Uint8Array>, from: string) {
+    let isOpen = true;
+    dataReader.closed.then(() => isOpen = false);
+
+    while (isOpen) {
+      const { done, value } = await dataReader.read();
       if (done) {
         break;
       }
-      appendLog({ message: `Datagram read: ${value}`, type: 'info' });
+      appendLog({ message: `Read from ${from}: ${value}`, type: 'info' });
     }
   }
 
@@ -46,6 +60,7 @@ function App() {
       if (done) { break; }
 
       appendLog({ message: `Received ${streamType} stream`, type: 'info' })
+      readData(value.readable.getReader(), streamType);
 
       // value is an instance of WebTransportBidirectionalStream
       console.log("Received stream", {
@@ -67,8 +82,7 @@ function App() {
       appendLog({ message: 'WebTransport is ready', type: 'success' });
 
       const datagramReader = wt.datagrams.readable.getReader();
-      datagramReader.closed.then(() => setIsDatagramReaderClosed(true));
-      readDatagram(datagramReader);
+      readData(datagramReader, "datagram");
 
       readStream(wt.incomingBidirectionalStreams, "bidirectional");
       readStream(wt.incomingUnidirectionalStreams, "unidirectional");
@@ -114,6 +128,12 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (logsRef.current) {
+      logsRef.current.scrollTop = logsRef.current.scrollHeight;
+    }
+  }, [logs]);
+
   return (
     <div className="flex">
       <div className="flex-grow">
@@ -135,7 +155,7 @@ function App() {
       <div className="flex-grow">
         <h2 className="font-semibold text-xl mb-2">Logs</h2>
 
-        <div className="bg-gray-100 rounded-lg p-4 text-sm text-gray-900"><pre>
+        <div ref={logsRef} className="bg-gray-100 rounded-lg p-4 text-sm text-gray-900 overflow-auto max-h-96"><pre>
           <code>{
           logs.map((log) =>
             (
