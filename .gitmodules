@@ -1,3 +1,0 @@
-[submodule "mkcert"]
-	path = mkcert
-	url = https://github.com/kixelated/mkcert.git
