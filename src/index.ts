@@ -90,6 +90,7 @@ async function main() {
   try {
     const sessionStream = await h3Server.sessionStream("/");
     const sessionReader = sessionStream.getReader();
+    sessionReader.closed.catch((e: any) => console.log("session reader closed with error!", e));
 
     while (!isKilled) {
       console.log("sessionReader.read() - waiting for session...");
@@ -112,28 +113,35 @@ async function main() {
           const writer = bidi.writable.getWriter();
           const reader = bidi.readable.getReader();
 
+          writer.closed.catch((e: any) => console.log("writer closed with error!", e));
+          reader.closed.catch((e: any) => console.log("writer closed with error!", e));
+
           let i = 0;
           const sendingInterval = setInterval(() => {
+            console.log("sending...");
             writer.write(new Uint8Array([i, i + 1, i + 2]));
             i += 3;
           }, 1000);
 
-          writer.closed.then(() => clearInterval(sendingInterval));
+          writer.closed.finally(() => {
+            console.log("STOP interval / STOP sending!");
+            clearInterval(sendingInterval);
+          });
         });
 
         // reading datagrams
         const datagramReader = value.datagrams.readable.getReader();
+        datagramReader.closed.catch((e: any) => console.log("datagram reader closed with error!", e));
 
         // writing datagrams
         const datagramWriter = value.datagrams.writable.getWriter();
+        datagramWriter.closed.catch((e: any) => console.log("datagram writer closed with error!", e));
         datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
         datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
 
       }).catch((e) => {
         console.log("session failed to be ready!");
       });
-      // console.log(value);
-      // console.log("sessionReader.read() =>", value);
     }
 
   } catch (e) {

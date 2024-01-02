@@ -70,12 +70,17 @@ function App() {
 
   async function readStream(readableStream: ReadableStream, streamType: string) {
     const reader = readableStream.getReader();
+    reader.closed.catch(e => console.log(streamType, "closed", e.toString()));
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) { break; }
 
       appendLog({ message: `Received ${streamType} stream`, type: 'info' })
-      readData(value.readable.getReader(), streamType);
+
+      const streamReadable = value.readable.getReader();
+      streamReadable.closed.catch((e: any) => console.log(streamType, "closed", e.toString()));
+      readData(streamReadable, streamType);
 
       // value is an instance of WebTransportBidirectionalStream
       console.log("Received stream", {
@@ -133,14 +138,17 @@ function App() {
       setIsReady(true);
       appendLog({ message: 'WebTransport is ready', type: 'success' });
 
-      const datagramReader = wt.datagrams.readable.getReader();
-      readData(datagramReader, "datagram");
+      // const datagramReader = wt.datagrams.readable.getReader();
+      // datagramReader.closed.catch(e => console.log("datagram readable closed", e.toString()));
+      // readData(datagramReader, "datagram");
 
-      readStream(wt.incomingBidirectionalStreams, "bidirectional");
-      readStream(wt.incomingUnidirectionalStreams, "unidirectional");
+      // readStream(wt.incomingBidirectionalStreams, "bidirectional");
+      // readStream(wt.incomingUnidirectionalStreams, "unidirectional");
 
     }).catch((e) => {
       appendLog({ message: e.toString(), type: 'error' });
+    }).finally(() => {
+      console.log("wt.ready.finally() ...");
     });
   }
 
@@ -151,7 +159,11 @@ function App() {
 
   const onClickDisconnect = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    wtRef.current?.close();
+    try {
+      wtRef.current?.close({ closeCode: 0, reason: "all good" });
+    } catch (e) {
+      console.log("Error closing WebTransport", e);
+    }
   };
 
   useEffect(() => {
@@ -160,7 +172,7 @@ function App() {
 
     return () => {
       if (wtRef.current) {
-        wtRef.current.close();
+        wtRef.current.close()
 
       } else {
         abortController.abort();
@@ -179,8 +191,7 @@ function App() {
       <div className="flex-grow">
         {/* <h2 className="font-semibold text-xl mb-2">API</h2> */}
         <form action="" className="mb-2">
-          <label className="text-sm uppercase mr-2" htmlFor="endpoint">Endpoint</label>
-          <input className="p-2 rounded bg-gray-100 border border-slate-300 disabled:cursor-not-allowed mr-1" type="text" name="endpoint" id="endpoint" value={endpoint} onChange={onEndpointChange} />
+          <input placeholder="Endpoint" className="p-2 rounded bg-gray-100 border border-slate-300 disabled:cursor-not-allowed mr-1" type="text" name="endpoint" id="endpoint" value={endpoint} onChange={onEndpointChange} />
           {(isReady) ? (
             <button className="p-2 rounded bg-red-500 border border-red-800 hover:bg-red-600 hover:border-red-800 active:bg-red-900 text-white" onClick={onClickDisconnect}>Disconnect</button>
           ) : (
