@@ -448,11 +448,6 @@ export async function generateWebTransportCertificate(attrs: any, options: { day
       cert: pemcert,
       hash: certhash,
       fingerprint: x509cert.fingerprint256,
-      raw: {
-        privateKey: await privateKey,
-        publicKey: publicKey,
-        certificate: cert
-      }
     };
 
     return pem

@@ -1,16 +1,38 @@
 import path from "path";
 import mime from "mime";
 import { readFile } from "node:fs/promises";
-import { createServer } from "https";
+import http from "http";
+import https from "https";
 import { Http3Server } from "@fails-components/webtransport";
 import { generateWebTransportCertificate } from './mkcert';
 
 const PORT = 4433;
 
-//
-// TRY THIS??
-// https://stackoverflow.com/questions/75979276/do-i-have-to-get-a-valid-ssl-certificate-to-make-webtranport-server-examples-wor
-//
+const proxy = http.createServer((clientReq, clientRes) => {
+  const options = {
+    hostname: 'localhost',
+    port: 5173,
+    path: clientReq.url,
+    method: clientReq.method,
+    headers: clientReq.headers
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    clientRes.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(clientRes, {
+      end: true
+    });
+  });
+
+  clientReq.pipe(proxyReq, {
+    end: true
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('Proxy request error:', err);
+    clientRes.end();
+  });
+});
 
 async function main() {
   const certificate = await generateWebTransportCertificate([
@@ -26,29 +48,20 @@ async function main() {
   /**
    * Create a HTTPS server to serve static files
    */
-  createServer({
+  https.createServer({
     cert: certificate?.cert,
     key: certificate?.private
   }, async function (req, res) {
-    try {
-      const filename = req.url?.substring(1) || "index.html"; // fallback to "index.html"
-      const contents = (await readFile(path.join(__dirname, "..", "public", filename)));
-      const contentType = mime.getType(filename) || "text/plain" ;
-      res.writeHead(200, { "content-type": contentType });
+    const filename = req.url?.substring(1) || "index.html"; // fallback to "index.html"
 
-      if (contentType.indexOf("text/") === 0) {
-        const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
-        res.end(contents.toString().replace("{{SERVER_PUB_KEY}}", fingerprint!.join(",")));
-
-      } else {
-        res.end(contents);
-      }
-
-    } catch (e) {
-      console.error(e);
-      res.writeHead(404, { "content-type": "text/plain" });
-      res.end("Not Found");
+    if (filename === "fingerprint") {
+      const fingerprint = certificate?.fingerprint!.split(":").map((hex) => parseInt(hex, 16));
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(fingerprint));
+      return;
     }
+
+    proxy.emit('request', req, res);
   }).listen(PORT);
 
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
