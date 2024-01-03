@@ -127,6 +127,8 @@ async function main() {
             console.log("STOP interval / STOP sending!");
             clearInterval(sendingInterval);
           });
+        }).catch((e: any) => {
+          console.log("failed to create bidirectional stream!", e);
         });
 
         // reading datagrams
@@ -135,11 +137,14 @@ async function main() {
 
         // writing datagrams
         const datagramWriter = value.datagrams.writable.getWriter();
-        datagramWriter.closed.catch((e: any) => console.log("datagram writer closed with error!", e));
+        datagramWriter.closed
+          .then(() => console.log("datagram writer closed successfully!"))
+          .catch((e: any) => console.log("datagram writer closed with error!", e));
         datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
         datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
+        datagramWriter.close();
 
-      }).catch((e) => {
+      }).catch((e: any) => {
         console.log("session failed to be ready!");
       });
     }
@@ -147,10 +152,10 @@ async function main() {
   } catch (e) {
     console.error("error:", e);
 
-  } finally {
-    console.log("will stop the server!");
-    // stop the server!
-    h3Server.stopServer();
+  // } finally {
+  //   console.log("will stop the server!");
+  //   // stop the server!
+  //   h3Server.stopServer();
   }
 }
 

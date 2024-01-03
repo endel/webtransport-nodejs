@@ -28,7 +28,7 @@ function App() {
   const [isUniBlockOpen, setIsUniBlockOpen] = useState(false);
 
   const logsRef = useRef(null as HTMLDivElement | null);
-  const wtRef = useRef(null as WebTransport | null);
+  const transportRef = useRef(null as WebTransport | null);
 
   const toggleOpenDatagram = () => setIsDatagramBlockOpen(!isDatagramBlockOpen);
   const toggleOpenIncomingBidi = () => setIsIncomingBidiBlockOpen(!isIncomingBidiBlockOpen);
@@ -101,8 +101,6 @@ function App() {
     let options: WebTransportOptions | undefined;
     let error: Error;
 
-
-
     fetch(`${endpoint}/fingerprint`, { method: "GET", signal: abortController?.signal }).
       then((res) => res.json()).
       then((fingerprint) => {
@@ -125,14 +123,14 @@ function App() {
       }).finally(() => {
         // proceed only if not request aborted
         if (!abortController || !abortController.signal.aborted) {
-          wtRef.current = new WebTransport(endpoint, options);
-          setupWebTransport(wtRef.current);
+          transportRef.current = new WebTransport(endpoint, options);
+          setupWebTransport(transportRef.current);
         }
       });
   }
 
-  async function setupWebTransport(wt: WebTransport) {
-    wt.closed.then((e) => {
+  async function setupWebTransport(transport: WebTransport) {
+    transport.closed.then((e) => {
       appendLog({ message: 'WebTransport is closed', type: 'info' });
     }).catch((e) => {
       appendLog({ message: e.toString(), type: 'error' });
@@ -140,21 +138,21 @@ function App() {
       setIsReady(false);
     });
 
-    wt.ready.then(() => {
+    transport.ready.then(() => {
       setIsReady(true);
       appendLog({ message: 'WebTransport is ready', type: 'success' });
 
-      const datagramReader = wt.datagrams.readable.getReader();
+      const datagramReader = transport.datagrams.readable.getReader();
       datagramReader.closed.catch(e => console.log("datagram readable closed", e.toString()));
       readData(datagramReader, "datagram");
 
-      // readStream(wt.incomingBidirectionalStreams, "bidirectional");
-      // readStream(wt.incomingUnidirectionalStreams, "unidirectional");
+      // readStream(transport.incomingBidirectionalStreams, "bidirectional");
+      // readStream(transport.incomingUnidirectionalStreams, "unidirectional");
 
     }).catch((e) => {
       appendLog({ message: e.toString(), type: 'error' });
     }).finally(() => {
-      console.log("wt.ready.finally() ...");
+      console.log("transport.ready.finally() ...");
     });
   }
 
@@ -166,7 +164,7 @@ function App() {
   const onClickDisconnect = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      wtRef.current?.close({ closeCode: 0, reason: "all good" });
+      transportRef.current?.close({ closeCode: 0, reason: "all good" });
     } catch (e) {
       console.log("Error closing WebTransport", e);
     }
@@ -177,8 +175,8 @@ function App() {
     connect(abortController);
 
     return () => {
-      if (wtRef.current) {
-        wtRef.current.close()
+      if (transportRef.current) {
+        transportRef.current.close()
 
       } else {
         abortController.abort();
