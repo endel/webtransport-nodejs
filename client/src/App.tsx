@@ -247,7 +247,10 @@ function App() {
         {(isDatagramBlockOpen) && (
           <div className="mb-2 pl-4 border-l border-gray-200">
             <h2 className="font-semibold my-2 text-sm">Reading datagrams:</h2>
-            <CodeBlock code={`async function readData(reader) {
+            <CodeBlock code={`const reader = transport.datagrams.readable.getReader();
+readData(reader);
+
+async function readData(reader) {
   reader.closed
     .catch((e) => console.log("Failed to close", e.toString()))
     .finally(() => isOpen = false);
@@ -263,10 +266,7 @@ function App() {
       break;
     }
   }
-}
-
-const reader = transport.datagrams.readable.getReader();
-readData(datagramReader, "datagram");`}></CodeBlock>
+}`}></CodeBlock>
 
             <h2 className="font-semibold my-2 text-sm mt-4">Writing datagrams:</h2>
             <CodeBlock code={`const writer = transport.datagrams.writable.getWriter();
