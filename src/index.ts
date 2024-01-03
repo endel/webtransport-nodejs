@@ -110,23 +110,23 @@ async function main() {
         console.log("session ready!");
 
         value.createBidirectionalStream().then((bidi) => {
-          const writer = bidi.writable.getWriter();
           const reader = bidi.readable.getReader();
-
-          writer.closed.catch((e: any) => console.log("writer closed with error!", e));
-          reader.closed.catch((e: any) => console.log("writer closed with error!", e));
 
           let i = 0;
           const sendingInterval = setInterval(() => {
             console.log("sending...");
             writer.write(new Uint8Array([i, i + 1, i + 2]));
             i += 3;
-          }, 1000);
+          }, 30);
 
-          writer.closed.finally(() => {
-            console.log("STOP interval / STOP sending!");
+          reader.closed.catch((e: any) => console.log("writer closed with error!", e));
+
+          const writer = bidi.writable.getWriter();
+          writer.closed.catch((e: any) => {
+            console.log("writer closed with error!", e);
             clearInterval(sendingInterval);
           });
+
         }).catch((e: any) => {
           console.log("failed to create bidirectional stream!", e);
         });
@@ -142,7 +142,6 @@ async function main() {
           .catch((e: any) => console.log("datagram writer closed with error!", e));
         datagramWriter.write(new Uint8Array([1, 2, 3, 4, 5]));
         datagramWriter.write(new Uint8Array([6, 7, 8, 9, 10]));
-        datagramWriter.close();
 
       }).catch((e: any) => {
         console.log("session failed to be ready!");

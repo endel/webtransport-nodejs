@@ -9,11 +9,19 @@ interface Log {
   type: 'info' | 'error' | 'warning' | 'success';
 }
 
+type StreamType = "datagram" | "bidirectional" | "unidirectional";
+
 const LOG_COLOR = {
   info: 'text-gray-900',
   error: 'bg-red-100 text-red-800',
   warning: 'bg-yellow-100 text-yellow-800',
   success: 'bg-green-300 text-green-800',
+};
+
+const initialCount = {
+  datagram: 0,
+  bidirectional: 0,
+  unidirectional: 0,
 };
 
 function App() {
@@ -26,6 +34,8 @@ function App() {
   const [isIncomingUniBlockOpen, setIsIncomingUniBlockOpen] = useState(false);
   const [isBidiBlockOpen, setIsBidiBlockOpen] = useState(false);
   const [isUniBlockOpen, setIsUniBlockOpen] = useState(false);
+
+  const [incomingCount, setIncomingCount] = useState(initialCount);
 
   const logsRef = useRef(null as HTMLDivElement | null);
   const transportRef = useRef(null as WebTransport | null);
@@ -55,7 +65,7 @@ function App() {
   //   }
   // }
 
-  async function readData(dataReader: ReadableStreamDefaultReader<Uint8Array>, from: string) {
+  async function readData(dataReader: ReadableStreamDefaultReader<Uint8Array>, from: StreamType) {
     let isOpen = true;
 
     dataReader.closed
@@ -66,6 +76,8 @@ function App() {
       try {
         const { done, value } = await dataReader.read();
         if (done) { break; }
+
+        setIncomingCount((count) => ({ ...count, [from]: count[from] + 1 }));
         appendLog({ message: `Read from ${from}: ${value}`, type: 'info' });
       } catch (e: any) {
         console.log("Failed to read...", e.toString());
@@ -74,7 +86,7 @@ function App() {
     }
   }
 
-  async function readStream(readableStream: ReadableStream, streamType: string) {
+  async function readStream(readableStream: ReadableStream, streamType: StreamType) {
     const reader = readableStream.getReader();
     reader.closed.catch(e => console.log(streamType, "closed", e.toString()));
 
@@ -87,6 +99,7 @@ function App() {
       const streamReadable = value.readable.getReader();
       streamReadable.closed.catch((e: any) => console.log(streamType, "closed", e.toString()));
       readData(streamReadable, streamType);
+      setIncomingCount((count) => ({ ...count, [streamType]: count[streamType] + 1 }));
 
       // value is an instance of WebTransportBidirectionalStream
       console.log("Received stream", {
@@ -97,6 +110,8 @@ function App() {
   }
 
   function connect(abortController?: AbortController) {
+    setIncomingCount(initialCount);
+
     let certificateHash: Uint8Array;
     let options: WebTransportOptions | undefined;
     let error: Error;
@@ -146,8 +161,17 @@ function App() {
       datagramReader.closed.catch(e => console.log("datagram readable closed", e.toString()));
       readData(datagramReader, "datagram");
 
-      // readStream(transport.incomingBidirectionalStreams, "bidirectional");
-      // readStream(transport.incomingUnidirectionalStreams, "unidirectional");
+      const bidi = transport.createBidirectionalStream();
+      bidi.then((stream) => {
+        const reader = stream.readable.getReader();
+        reader.closed.catch(e => console.log("bidi readable closed", e.toString()));
+        const writer = stream.writable.getWriter();
+        writer.closed.catch(e => console.log("bidi writable closed", e.toString()));
+      });
+      bidi.catch(() => console.log("Failed to create bidirectional stream"));
+
+      readStream(transport.incomingBidirectionalStreams, "bidirectional");
+      readStream(transport.incomingUnidirectionalStreams, "unidirectional");
 
     }).catch((e) => {
       appendLog({ message: e.toString(), type: 'error' });
@@ -205,7 +229,7 @@ function App() {
 
         <h3 className="font-semibold text-lg cursor-pointer" onClick={toggleOpenDatagram}>
           <span className={`caret inline-block transition-all ${(isDatagramBlockOpen) ? "rotate-90" : "rotate-0"} mr-1`}>▶</span>
-          Datagrams
+          Datagrams <small>({incomingCount["datagram"]})</small>
         </h3>
 
         {(isDatagramBlockOpen) && (
@@ -216,7 +240,7 @@ function App() {
 
         <h3 className="font-semibold text-lg cursor-pointer" onClick={toggleOpenIncomingBidi}>
           <span className={`caret inline-block transition-all ${(isIncomingBidiBlockOpen) ? "rotate-90" : "rotate-0"} mr-1`}>▶</span>
-          Incoming Bidirectional Streams
+          Incoming Bidirectional Streams <small>({incomingCount["bidirectional"]})</small>
         </h3>
         {(isIncomingBidiBlockOpen) && (
           <form className="mb-2">
@@ -226,7 +250,7 @@ function App() {
 
         <h3 className="font-semibold text-lg cursor-pointer" onClick={toggleOpenIncomingUni}>
           <span className={`caret inline-block transition-all ${(isIncomingUniBlockOpen) ? "rotate-90" : "rotate-0"} mr-1`}>▶</span>
-          Incoming Unidirectional Streams
+          Incoming Unidirectional Streams <small>({incomingCount["unidirectional"]})</small>
         </h3>
         {(isIncomingUniBlockOpen) && (
           <form className="mb-2">
@@ -260,9 +284,9 @@ function App() {
 
         <div ref={logsRef} className="bg-gray-100 rounded-lg p-4 text-sm text-gray-900 overflow-auto max-h-96"><pre>
           <code>{
-          logs.map((log) =>
+          logs.map((log, i) =>
             (
-              <div key={log.message} className={`${LOG_COLOR[log.type]} rounded p-1`}>
+              <div key={i} className={`${LOG_COLOR[log.type]} rounded p-1`}>
                 {log.message}
               </div>
             )
