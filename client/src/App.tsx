@@ -1,4 +1,3 @@
-import { log } from 'console';
 import { useEffect, useRef, useState } from 'react'
 import CodeBlock from './CodeBlock';
 
@@ -151,7 +150,7 @@ function App() {
   }
 
   async function setupWebTransport(transport: WebTransport) {
-    transport.closed.then((e) => {
+    transport.closed.then((_) => {
       appendLog({ message: 'WebTransport is closed', type: 'info' });
     }).catch((e) => {
       appendLog({ message: e.toString(), type: 'error' });

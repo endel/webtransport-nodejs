@@ -1,10 +1,16 @@
+import path from "path";
+import mime from "mime";
 import http from "http";
 import https from "https";
 import { Http3Server } from "@fails-components/webtransport";
 import { generateWebTransportCertificate } from './mkcert';
+import { readFile } from "node:fs/promises";
 
 const PORT = 4433;
 
+/**
+ * Proxy to serve local development server (:5173) on HTTPS (:4433)
+ */
 const proxy = http.createServer((clientReq, clientRes) => {
   const options = {
     hostname: 'localhost',
@@ -58,7 +64,22 @@ async function main() {
       return;
     }
 
-    proxy.emit('request', req, res);
+    if (process.env.NODE_ENV !== "production") {
+      /**
+       * DEVELOPMENT:
+       * Use proxy to serve local development server
+       */
+      proxy.emit('request', req, res);
+
+    } else {
+      /**
+       * PRODUCTION:
+       * Serve static files from "client/dist"
+       */
+      res.writeHead(200, { "content-type": mime.getType(filename) || "text/plain" });
+      res.end((await readFile(path.join(__dirname, "..", "client", "dist", filename))));
+    }
+
   }).listen(PORT);
 
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
@@ -72,6 +93,7 @@ async function main() {
   });
 
   h3Server.startServer();
+  // h3Server.updateCert(certificate?.cert, certificate?.private);
 
   let isKilled: boolean = false;
 
