@@ -3,6 +3,8 @@
 - Uses [fails-components/webtransport](https://github.com/fails-components/webtransport) as HTTP/3 layer.
 - Node.js 20+
 
+![](screenshot.png)
+
 ## Running locally
 
 Install and run the backend:
