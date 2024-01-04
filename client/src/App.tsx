@@ -166,14 +166,14 @@ function App() {
       const datagramReader = transport.datagrams.readable.getReader();
       readData(datagramReader, "datagram");
 
-      const bidi = transport.createBidirectionalStream();
-      bidi.then((stream) => {
-        const reader = stream.readable.getReader();
-        reader.closed.catch(e => console.log("bidi readable closed", e.toString()));
-        const writer = stream.writable.getWriter();
-        writer.closed.catch(e => console.log("bidi writable closed", e.toString()));
-      });
-      bidi.catch(() => console.log("Failed to create bidirectional stream"));
+      // const bidi = transport.createBidirectionalStream();
+      // bidi.then((stream) => {
+      //   const reader = stream.readable.getReader();
+      //   reader.closed.catch(e => console.log("bidi readable closed", e.toString()));
+      //   const writer = stream.writable.getWriter();
+      //   writer.closed.catch(e => console.log("bidi writable closed", e.toString()));
+      // });
+      // bidi.catch(() => console.log("Failed to create bidirectional stream"));
 
       readStream(transport.incomingBidirectionalStreams, "bidirectional");
       readStream(transport.incomingUnidirectionalStreams, "unidirectional");
