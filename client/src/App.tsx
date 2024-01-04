@@ -4,7 +4,7 @@ import CodeBlock from './CodeBlock';
 // ←
 // →
 
-const ENDPOINT = "https://localhost:4433";
+const ENDPOINT = `https://${window.location.hostname}:4433`;
 const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 interface Log {
