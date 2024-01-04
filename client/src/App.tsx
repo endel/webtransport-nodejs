@@ -96,7 +96,7 @@ function App() {
 
   async function readStream(readableStream: ReadableStream, streamType: StreamType) {
     const reader = readableStream.getReader();
-    reader.closed.catch(e => console.log(streamType, "closed", e.toString()));
+    // reader.closed.catch(e => console.log(streamType, "closed", e.toString()));
 
     while (true) {
       const { done, value } = await reader.read();
@@ -122,7 +122,6 @@ function App() {
 
     let certificateHash: Uint8Array;
     let options: WebTransportOptions | undefined;
-    let error: Error;
 
     fetch(`${endpoint}/fingerprint`, { method: "GET", signal: abortController?.signal }).
       then((res) => res.json()).
@@ -141,7 +140,6 @@ function App() {
         };
       }).catch((e) => {
         console.error(e);
-        error = e;
 
       }).finally(() => {
         // proceed only if not request aborted
@@ -261,8 +259,8 @@ function App() {
         {(isDatagramBlockOpen) && (
           <div className="mb-2 pl-4 border-l border-gray-200">
             <h2 className="font-semibold my-2 text-sm">Reading datagrams:</h2>
-            <CodeBlock code={`const reader = transport.datagrams.readable.getReader();
-readData(reader);
+            <CodeBlock code={`const readableStream = transport.datagrams.readable.getReader();
+readData(readableStream);
 
 async function readData(reader) {
   reader.closed
@@ -295,6 +293,18 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
         {(isIncomingBidiBlockOpen) && (
           <div className="mb-2">
 
+            <h2 className="font-semibold my-2 text-sm">Read incoming stream:</h2>
+            <CodeBlock code={`const reader = transport.incomingBidirectionalStreams.getReader();
+const { done, value } = await reader.read();`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a bidirectional stream:</h2>
+            <CodeBlock code={`const readableStream = value.readable.getReader();
+readData(readableStream);`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a bidirectional stream:</h2>
+            <CodeBlock code={`const writer = value.writable.getWriter();
+writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
+
           </div>
         )}
 
@@ -304,6 +314,14 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
         </h3>
         {(isIncomingUniBlockOpen) && (
           <div className="mb-2">
+
+            <h2 className="font-semibold my-2 text-sm">Read incoming stream:</h2>
+            <CodeBlock code={`const reader = transport.incomingUnidirectionalStreams.getReader();
+const { done, value } = await reader.read();`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a unidirectional stream:</h2>
+            <CodeBlock code={`const readableStream = value.readable.getReader();
+readData(readableStream);`}></CodeBlock>
 
           </div>
         )}
@@ -315,6 +333,17 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
         {(isBidiBlockOpen) && (
           <div className="mb-2">
 
+            <h2 className="font-semibold my-2 text-sm">Creating a bidirectional stream:</h2>
+            <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a bidirectional stream:</h2>
+            <CodeBlock code={`const readableStream = stream.readable.getReader();
+readData(readableStream);`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a bidirectional stream:</h2>
+            <CodeBlock code={`const writer = stream.writable.getWriter();
+writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
+
           </div>
         )}
 
@@ -324,6 +353,13 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
         </h3>
         {(isUniBlockOpen) && (
           <form className="mb-2">
+
+            <h2 className="font-semibold my-2 text-sm">Creating a unidirectional stream:</h2>
+            <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
+
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a unidirectional stream:</h2>
+            <CodeBlock code={`const writer = stream.writable.getWriter();
+writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
 
           </form>
         )}
