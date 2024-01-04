@@ -40,6 +40,7 @@ function App() {
   const [isUniBlockOpen, setIsUniBlockOpen] = useState(false);
 
   const [incomingCount, setIncomingCount] = useState(initialCount);
+  const [isLogsScrollAtBottom, setIsLogsScrollAtBottom] = useState(true);
 
   const logsRef = useRef(null as HTMLDivElement | null);
   const transportRef = useRef(null as WebTransport | null);
@@ -214,9 +215,22 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
+  const onClickScrollToBottom = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (logsRef.current) {
       logsRef.current.scrollTop = logsRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    const logsElement = logsRef.current;
+    if (logsElement) {
+      // only scroll to bottom if user is already at the bottom
+      const isAtBottom = logsElement.scrollHeight - Math.ceil(logsElement.scrollTop) < logsElement.clientHeight + 40;
+      if (isAtBottom) {
+        logsElement.scrollTop = logsElement.scrollHeight;
+      }
+      setIsLogsScrollAtBottom(isAtBottom);
     }
   }, [logs]);
 
@@ -318,17 +332,22 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
       <div className="flex-grow">
         <h2 className="font-semibold text-xl mb-2">Logs</h2>
 
-        <div ref={logsRef} className="bg-gray-100 rounded-lg p-4 text-sm text-gray-900 overflow-y-auto overflow-x-none max-h-96"><pre>
-          <code>{
-          logs.map((log, i) =>
-            (
-              <div key={i} className={`${LOG_COLOR[log.type]} rounded p-1`}>
-                {log.message}
-              </div>
+        <div className="bg-gray-100 rounded-lg p-4 text-sm text-gray-900 relative">
+          {(!isLogsScrollAtBottom) && (
+            <button onClick={onClickScrollToBottom} className="absolute w-32 left-0 right-0 bottom-4 mx-auto text-center bg-blue-600 rounded-lg p-3 text-white text-xs">Scroll to bottom</button>
+          )}
+          <div ref={logsRef} className="overflow-y-auto overflow-x-none max-h-96">
+            <pre><code>{
+            logs.map((log, i) =>
+              (
+                <div key={i} className={`${LOG_COLOR[log.type]} rounded p-1`}>
+                  {log.message}
+                </div>
+              )
             )
-          )
-          }</code>
-        </pre></div>
+            }</code></pre>
+          </div>
+        </div>
 
       </div>
     </div>
