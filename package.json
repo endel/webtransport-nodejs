@@ -5,13 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx watch src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "chrome": "open -a Google\\ Chrome --args '--ignore-certificate-errors' '--v=2' '--enable-logging=stderr' '--origin-to-force-quic-on=localhost:4433'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/mkcert": "^1.2.0",
     "@types/node": "^20.3.1",
     "tsx": "^3.12.7",
     "typescript": "^5.1.3"
@@ -20,7 +18,6 @@
     "@fails-components/webtransport": "^1.0.4",
     "@fails-components/webtransport-transport-http3-quiche": "^1.0.4",
     "mime": "^4.0.1",
-    "mkcert": "^1.5.1",
     "node-forge": "^1.3.1"
   }
 }
