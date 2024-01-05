@@ -131,7 +131,7 @@ function App() {
         //
         certificateHash = new Uint8Array(fingerprint);
 
-        if (certificateHash.byteLength > 0) {
+        if (certificateHash.byteLength === 32) {
           options = {
             // requireUnreliable: true,
             // congestionControl: "default", // "low-latency" || "throughput"
