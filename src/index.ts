@@ -53,7 +53,7 @@ async function main() {
    */
   https.createServer({
     cert: certificate?.cert,
-    key: certificate?.private
+    key: certificate?.private,
   }, async function (req, res) {
     const filename = req.url?.substring(1) || "index.html"; // fallback to "index.html"
 
@@ -76,7 +76,10 @@ async function main() {
        * PRODUCTION:
        * Serve static files from "client/dist"
        */
-      res.writeHead(200, { "content-type": mime.getType(filename) || "text/plain" });
+      res.writeHead(200, {
+        "content-type": (mime.getType(filename) || "text/plain"),
+        "Alt-Svc": `h3=":${PORT}"`
+      });
       res.end((await readFile(path.join(__dirname, "..", "client", "dist", filename))));
     }
 

@@ -28,6 +28,8 @@ Open `https://localhost:4433` in your browser. (Currently only Chrome is capable
 
 WIP
 
+https://community.letsencrypt.org/t/nginx-http3-letsencrypt/181112/13
+
 - SSL certificate must be set to expire in less than 14 days.
 
 ## License

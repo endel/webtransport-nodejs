@@ -31,6 +31,7 @@ function App() {
   const [isReady, setIsReady] = useState(false);
   const [logs, setLogs] = useState([] as Log[]);
 
+  const [isConnectionBlockOpen, setIsConnectionBlockOpen] = useState(true);
   const [isDatagramBlockOpen, setIsDatagramBlockOpen] = useState(false);
   const [isIncomingBidiBlockOpen, setIsIncomingBidiBlockOpen] = useState(false);
   const [isIncomingUniBlockOpen, setIsIncomingUniBlockOpen] = useState(false);
@@ -43,6 +44,7 @@ function App() {
   const logsRef = useRef(null as HTMLDivElement | null);
   const transportRef = useRef(null as WebTransport | null);
 
+  const toggleOpenConnection = () => setIsConnectionBlockOpen(!isConnectionBlockOpen);
   const toggleOpenDatagram = () => setIsDatagramBlockOpen(!isDatagramBlockOpen);
   const toggleOpenIncomingBidi = () => setIsIncomingBidiBlockOpen(!isIncomingBidiBlockOpen);
   const toggleOpenIncomingUni = () => setIsIncomingUniBlockOpen(!isIncomingUniBlockOpen);
@@ -233,22 +235,31 @@ function App() {
     <div className="grid grid-cols-2 gap-4">
       <div className="flex-grow">
         {/* <h2 className="font-semibold text-xl mb-2">API</h2> */}
-        <form action="" className="mb-2">
-          <div className="mb-2">
-            <input placeholder="Endpoint" className="p-2 rounded bg-gray-100 border border-slate-300 disabled:cursor-not-allowed mr-1" type="text" name="endpoint" id="endpoint" value={endpoint} onChange={onEndpointChange} />
-            {(isReady) ? (
-              <button className="p-2 rounded bg-red-500 border border-red-800 hover:bg-red-600 hover:border-red-800 active:bg-red-900 text-white" onClick={onClickDisconnect}>Disconnect</button>
-            ) : (
-              <button className="p-2 rounded bg-green-500 border border-green-800 text-white" onClick={onClickConnect}>Connect</button>
-            )}
-          </div>
 
-          <h2 className="font-semibold my-2 text-sm">Connecting with WebTransport</h2>
-          <CodeBlock code={`const transport = new WebTransport("${endpoint}");`}></CodeBlock>
+        <h3 className="mt-4 font-semibold text-lg cursor-pointer" onClick={toggleOpenConnection}>
+          <span className={`caret inline-block transition-all ${(isConnectionBlockOpen) ? "rotate-90" : "rotate-0"} mr-1`}>▶</span>
+          Connection Establishment
+        </h3>
+        {(isConnectionBlockOpen) && (
+          <form className="mb-2 py-2 pl-4 border-l border-gray-200">
+            <div className="mb-4">
+              <input placeholder="Endpoint" className="p-2 rounded bg-gray-100 border border-slate-300 disabled:cursor-not-allowed mr-1" type="text" name="endpoint" id="endpoint" value={endpoint} onChange={onEndpointChange} />
+              {(isReady) ? (
+                <button className="p-2 rounded bg-red-500 border border-red-800 hover:bg-red-600 hover:border-red-800 active:bg-red-900 text-white" onClick={onClickDisconnect}>Disconnect</button>
+              ) : (
+                <button className="p-2 rounded bg-green-500 border border-green-800 text-white" onClick={onClickConnect}>Connect</button>
+              )}
+            </div>
 
-        </form>
+            <div className="my-2">
+              <h2 className="font-semibold my-2 text-sm">Connecting with WebTransport</h2>
+              <CodeBlock code={`const transport = new WebTransport("${endpoint}");`}></CodeBlock>
+            </div>
 
-        <h3 className="mt-4 font-semibold text-lg cursor-pointer" onClick={toggleOpenDatagram}>
+          </form>
+        )}
+
+        <h3 className="font-semibold text-lg cursor-pointer" onClick={toggleOpenDatagram}>
           <span className={`caret inline-block transition-all ${(isDatagramBlockOpen) ? "rotate-90" : "rotate-0"} mr-1`}>▶</span>
           Datagrams <small>({incomingCount["datagram"]})</small>
         </h3>
