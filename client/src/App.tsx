@@ -149,8 +149,13 @@ function App() {
       }).finally(() => {
         // proceed only if not request aborted
         if (!abortController || !abortController.signal.aborted) {
-          transportRef.current = new WebTransport(endpoint, options);
-          setupWebTransport(transportRef.current);
+          try {
+            transportRef.current = new WebTransport(endpoint, options);
+            setupWebTransport(transportRef.current);
+
+          } catch (e: any) {
+            appendLog({ message: e.toString(), type: 'error' });
+          }
         }
       });
   }
