@@ -1,4 +1,4 @@
-# WebTransport Playground
+# WebTransport / HTTP3 in Node.js
 
 - Uses [fails-components/webtransport](https://github.com/fails-components/webtransport) as HTTP/3 layer.
 - Node.js 20+
