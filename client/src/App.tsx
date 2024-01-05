@@ -5,7 +5,6 @@ import CodeBlock from './CodeBlock';
 // →
 
 const ENDPOINT = `https://${window.location.hostname}:4433`;
-const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 interface Log {
   message: string;
@@ -127,11 +126,10 @@ function App() {
       then((fingerprint) => {
         certificateHash = new Uint8Array(fingerprint);
 
-        options = (isFirefox) ? undefined : {
+        options = {
           // requireUnreliable: true,
           // congestionControl: "default", // "low-latency" || "throughput"
 
-          // Firefox doesn't support "serverCertificateHashes" option yet
           serverCertificateHashes: [{
             algorithm: 'sha-256',
             value: certificateHash.buffer
@@ -290,7 +288,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
           Incoming Bidirectional Streams <small>({incomingCount["bidirectional"]})</small>
         </h3>
         {(isIncomingBidiBlockOpen) && (
-          <div className="mb-2">
+          <div className="mb-2 pl-4 border-l border-gray-200">
 
             <h2 className="font-semibold my-2 text-sm">Read incoming stream:</h2>
             <CodeBlock code={`const reader = transport.incomingBidirectionalStreams.getReader();
@@ -312,7 +310,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
           Incoming Unidirectional Streams <small>({incomingCount["unidirectional"]})</small>
         </h3>
         {(isIncomingUniBlockOpen) && (
-          <div className="mb-2">
+          <div className="mb-2 pl-4 border-l border-gray-200">
 
             <h2 className="font-semibold my-2 text-sm">Read incoming stream:</h2>
             <CodeBlock code={`const reader = transport.incomingUnidirectionalStreams.getReader();
@@ -330,7 +328,7 @@ readData(readableStream);`}></CodeBlock>
           Bidirectional Streams
         </h3>
         {(isBidiBlockOpen) && (
-          <div className="mb-2">
+          <div className="mb-2 pl-4 border-l border-gray-200">
 
             <h2 className="font-semibold my-2 text-sm">Creating a bidirectional stream:</h2>
             <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
@@ -351,7 +349,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
           Unidirectional Streams
         </h3>
         {(isUniBlockOpen) && (
-          <form className="mb-2">
+          <div className="mb-2 pl-4 border-l border-gray-200">
 
             <h2 className="font-semibold my-2 text-sm">Creating a unidirectional stream:</h2>
             <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
@@ -360,7 +358,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
             <CodeBlock code={`const writer = stream.writable.getWriter();
 writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
 
-          </form>
+          </div>
         )}
       </div>
 
