@@ -311,11 +311,11 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
             <CodeBlock code={`const reader = transport.incomingBidirectionalStreams.getReader();
 const { done, value } = await reader.read();`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a bidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading from a bidirectional stream:</h2>
             <CodeBlock code={`const readableStream = value.readable.getReader();
 readData(readableStream);`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a bidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing into a bidirectional stream:</h2>
             <CodeBlock code={`const writer = value.writable.getWriter();
 writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
 
@@ -333,7 +333,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
             <CodeBlock code={`const reader = transport.incomingUnidirectionalStreams.getReader();
 const { done, value } = await reader.read();`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a unidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading from a unidirectional stream:</h2>
             <CodeBlock code={`const readableStream = value.readable.getReader();
 readData(readableStream);`}></CodeBlock>
 
@@ -350,11 +350,11 @@ readData(readableStream);`}></CodeBlock>
             <h2 className="font-semibold my-2 text-sm">Creating a bidirectional stream:</h2>
             <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Reading data from a bidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Reading from a bidirectional stream:</h2>
             <CodeBlock code={`const readableStream = stream.readable.getReader();
 readData(readableStream);`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a bidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing into a bidirectional stream:</h2>
             <CodeBlock code={`const writer = stream.writable.getWriter();
 writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
 
@@ -371,7 +371,7 @@ writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
             <h2 className="font-semibold my-2 text-sm">Creating a unidirectional stream:</h2>
             <CodeBlock code={`const stream = await transport.createBidirectionalStream();`}></CodeBlock>
 
-            <h2 className="font-semibold my-2 text-sm mt-4">Writing data into a unidirectional stream:</h2>
+            <h2 className="font-semibold my-2 text-sm mt-4">Writing into a unidirectional stream:</h2>
             <CodeBlock code={`const writer = stream.writable.getWriter();
 writer.write(new Uint8Array([1, 2, 3]));`}></CodeBlock>
 
