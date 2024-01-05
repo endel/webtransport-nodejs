@@ -28,9 +28,10 @@ Open `https://localhost:4433` in your browser. (Currently only Chrome is capable
 
 WIP
 
-https://community.letsencrypt.org/t/nginx-http3-letsencrypt/181112/13
+- Get a LetsEncrypt certificate for your domain.
+- ~SSL certificate must be set to expire in less than 14 days~ (This doesn't seem to be required [?])
 
-- SSL certificate must be set to expire in less than 14 days.
+(TODO: see thread https://community.letsencrypt.org/t/nginx-http3-letsencrypt/181112/13)
 
 ## License
 

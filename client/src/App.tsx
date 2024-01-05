@@ -126,17 +126,23 @@ function App() {
     fetch(`${endpoint}/fingerprint`, { method: "GET", signal: abortController?.signal }).
       then((res) => res.json()).
       then((fingerprint) => {
+        //
+        // The `serverCertificateHashes` option is required during development
+        //
         certificateHash = new Uint8Array(fingerprint);
 
-        options = {
-          // requireUnreliable: true,
-          // congestionControl: "default", // "low-latency" || "throughput"
+        if (certificateHash.byteLength > 0) {
+          options = {
+            // requireUnreliable: true,
+            // congestionControl: "default", // "low-latency" || "throughput"
 
-          serverCertificateHashes: [{
-            algorithm: 'sha-256',
-            value: certificateHash.buffer
-          }]
-        };
+            serverCertificateHashes: [{
+              algorithm: 'sha-256',
+              value: certificateHash.buffer
+            }]
+          };
+        }
+
       }).catch((e) => {
         console.error(e);
 

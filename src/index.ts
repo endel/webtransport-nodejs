@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import mime from "mime";
 import http from "http";
@@ -6,7 +7,11 @@ import { Http3Server } from "@fails-components/webtransport";
 import { generateWebTransportCertificate } from './mkcert';
 import { readFile } from "node:fs/promises";
 
+const isProduction = process.env.NODE_ENV === "production";
 const PORT = 4433;
+const HOST = (isProduction)
+  ? "demo.web-transport.io"
+  : "localhost";
 
 /**
  * Proxy to serve local development server (:5173) on HTTPS (:4433)
@@ -38,7 +43,15 @@ const proxy = http.createServer((clientReq, clientRes) => {
 });
 
 async function main() {
-  const certificate = await generateWebTransportCertificate([
+  const certificate = (isProduction) ? {
+    /**
+     * Replace with your own certificate.
+     */
+    private: fs.readFileSync("/etc/letsencrypt/live/demo.web-transport.io/privkey.pem"),
+    cert: fs.readFileSync("/etc/letsencrypt/live/demo.web-transport.io/fullchain.pem"),
+    fingerprint: "" // not used in production
+
+  } : await generateWebTransportCertificate([
     { shortName: 'C', value: 'BR' },
     { shortName: 'ST', value: 'Rio Grande do Sul' },
     { shortName: 'L', value: 'Sapiranga' },
@@ -76,11 +89,19 @@ async function main() {
        * PRODUCTION:
        * Serve static files from "client/dist"
        */
-      res.writeHead(200, {
-        "content-type": (mime.getType(filename) || "text/plain"),
-        "Alt-Svc": `h3=":${PORT}"`
-      });
-      res.end((await readFile(path.join(__dirname, "..", "client", "dist", filename))));
+
+      const filepath = path.join(__dirname, "..", "client", "dist", filename);
+      if (fs.existsSync(filepath)) {
+        res.writeHead(200, {
+          "content-type": (mime.getType(filename) || "text/plain"),
+          "Alt-Svc": `h3=":${PORT}"`
+        });
+        res.end((await readFile(filepath)));
+
+      } else {
+        res.writeHead(404);
+        res.end('Not found');
+      }
     }
 
   }).listen(PORT);
@@ -88,7 +109,7 @@ async function main() {
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
 
   const h3Server = new Http3Server({
-    host: "localhost",
+    host: HOST,
     port: PORT,
     secret: "mysecret",
     cert: certificate?.cert,
