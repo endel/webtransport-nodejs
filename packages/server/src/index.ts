@@ -106,6 +106,8 @@ async function main() {
 
   }).listen(PORT);
 
+  console.log("Listening on " + PORT);
+
   // https://github.com/fails-components/webtransport/blob/master/test/testsuite.js
 
   const h3Server = new Http3Server({

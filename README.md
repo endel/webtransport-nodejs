@@ -7,17 +7,9 @@
 
 ## Running locally
 
-Install and run the backend:
+Install and run both the server and the frontend:
 
 ```
-npm install
-npm start
-```
-
-_On another terminal_, install and run the frontend:
-
-```
-cd client
 npm install
 npm start
 ```
