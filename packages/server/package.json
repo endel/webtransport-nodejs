@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fails-components/webtransport": "^1.1.4",
-    "@fails-components/webtransport-transport-http3-quiche": "^1.1.4",
+    "@fails-components/webtransport": "^1.4.2",
+    "@fails-components/webtransport-transport-http3-quiche": "^1.4.2",
     "mime": "^4.0.1",
     "node-forge": "^1.3.1"
   }
